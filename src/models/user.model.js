@@ -13,8 +13,8 @@ const userSchema = new Schema(
       default: 0,
     },
     activeSession: {
-      type: Boolean,
-      default: false,
+      type: String,
+      default: null,
     },
   },
   {

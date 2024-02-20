@@ -1,11 +1,16 @@
 import { Router } from "express";
-import { sendErrorResponse } from "../utils/response.js";
+import { sendErrorResponse, sendSuccessResponse } from "../utils/response.js";
 import isEmail from "validator/lib/isEmail.js";
 import isHexadecimal from "validator/lib/isHexadecimal.js";
 import Users from "../models/user.model.js";
 import { guestOnly, requireAuth } from "../middlewares/auth.js";
 import bcryptjs from "bcryptjs";
 import ResetPasswordTokens from "../models/reset-password.model.js";
+import Resend from "../emails/index.js";
+import { forgotPasswordEmail } from "../emails/templates/index.js";
+import UserController from "../controllers/user.controller.js";
+import sessionStore from "../config/sessionStore.js";
+import { generateRandomHexadecimalToken } from "../utils/helpers.js";
 
 const router = Router();
 
@@ -36,7 +41,7 @@ router.post("/register", guestOnly, async (req, res) => {
       );
     }
 
-    const userWithEmailExists = Users.findOne({ email });
+    const userWithEmailExists = await Users.findOne({ email });
 
     if (userWithEmailExists) {
       return sendErrorResponse(res, 400, null, "Email already exists");
@@ -51,6 +56,7 @@ router.post("/register", guestOnly, async (req, res) => {
 
     return sendSuccessResponse(res, 201, null, "User created successfully");
   } catch (error) {
+    console.log(error);
     return sendErrorResponse(res);
   }
 });
@@ -63,7 +69,7 @@ router.post("/login", guestOnly, async (req, res) => {
       return sendErrorResponse(res, 401, null, "All fields are required");
     }
 
-    if (password.length < 8) {
+    if (password.length < 6) {
       return sendErrorResponse(res, 401, null, "Invalid credentials.");
     }
 
@@ -95,6 +101,7 @@ router.post("/login", guestOnly, async (req, res) => {
 
     return sendSuccessResponse(res, 201, null, "Login successful.");
   } catch (error) {
+    console.log(error);
     return sendErrorResponse(res);
   }
 });
@@ -119,7 +126,77 @@ router.get("/logout", requireAuth, (req, res) => {
   }
 });
 
-router.post("/forgot-password", (req, res) => {});
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email?.trim()) {
+      return sendErrorResponse(res, 401, null, "Email is required.");
+    }
+
+    if (!isEmail(email)) {
+      return sendErrorResponse(res, 401, null, "Invalid email.");
+    }
+
+    const userDetails = await UserController.getUserDetails(req.body.email);
+
+    if (!userDetails) {
+      return sendErrorResponse(
+        res,
+        404,
+        null,
+        "User with that email does not exist."
+      );
+    }
+
+    await ResetPasswordTokens.deleteMany({
+      user: userDetails._id,
+    });
+
+    const selector = generateRandomHexadecimalToken();
+    const token = generateRandomHexadecimalToken();
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedToken = await bcryptjs.hash(token, salt);
+
+    const resetPasswordToken = await ResetPasswordTokens.create({
+      user: userDetails._id,
+      selector,
+      token: hashedToken,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 15),
+    });
+
+    if (!resetPasswordToken) {
+      return sendErrorResponse(
+        res,
+        500,
+        null,
+        "Error creating reset password token."
+      );
+    }
+    sendSuccessResponse(
+      res,
+      200,
+      null,
+      "Password reset link sent successfully please check your email."
+    );
+
+    const resend = new Resend();
+
+    await resend.sendEmail({
+      to: [userDetails.email],
+      from: "Untold.Ng <auth@emails.untold.ng>",
+      subject: "Reset your password",
+      html: forgotPasswordEmail({
+        resetLink: `${process.env.FRONTEND_URL}/auth/reset-password/?selector=${selector}&token=${token}`,
+      }),
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    return sendErrorResponse(res);
+  }
+});
 
 router.post("/reset-password/:selector/:token", async (req, res) => {
   try {

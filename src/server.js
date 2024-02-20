@@ -5,15 +5,20 @@ import session from "express-session";
 import sessionStore from "./config/sessionStore.js";
 import ApiRoute from "./routes/index.js";
 import connectToDb from "./config/mongoose.js";
-import Resend from "./emails/index.js";
-import { forgotPasswordEmail } from "./emails/templates/index.js";
 
 const app = express();
 config();
 
 const server = async () => {
-  app.use(cors());
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.disable("x-powered-by");
+  app.use(
+    cors({
+      origin: ["http://localhost:8000"],
+      credentials: true,
+    })
+  );
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
