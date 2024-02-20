@@ -15,7 +15,13 @@ const server = async () => {
   app.disable("x-powered-by");
   app.use(
     cors({
-      origin: ["http://localhost:8000"],
+      origin: [
+        "http://localhost:8000",
+        "http://untold.ng",
+        "https://untold.ng",
+        "https://www.untold.ng",
+        "http://www.untold.ng",
+      ],
       credentials: true,
     })
   );
