@@ -13,6 +13,7 @@ const server = async () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.disable("x-powered-by");
+  app.enable("trust proxy", 1);
   app.use(
     cors({
       origin: [
