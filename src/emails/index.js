@@ -1,3 +1,4 @@
+import { text } from "express";
 import { Resend as MainResend } from "resend";
 
 class Resend {
@@ -8,7 +9,7 @@ class Resend {
     this.resend = new MainResend(this.apikKey);
   }
 
-  async sendEmail({ to, subject, html, from, attachments }) {
+  async sendEmail({ to, subject, html, from, attachments, text = null }) {
     return new Promise((resolve, reject) => {
       this.resend.emails
         .send({
@@ -16,6 +17,7 @@ class Resend {
           to,
           subject,
           html,
+          text: text,
           attachments,
         })
         .then(({ data, error }) => {
