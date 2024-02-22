@@ -1,5 +1,5 @@
-import { config } from "dotenv";
 import express from "express";
+import { config } from "dotenv";
 import cors from "cors";
 import session from "express-session";
 import sessionStore from "./config/sessionStore.js";
@@ -7,15 +7,15 @@ import ApiRoute from "./routes/index.js";
 import connectToDb from "./config/mongoose.js";
 import helmet from "helmet";
 
-const app = express();
 config();
+const app = express();
 
 const server = async () => {
   app.use(
     cors({
       origin: [
-        "http://localhost:8000",
         "http://192.168.1.22:8000",
+        "http://localhost:8000",
         "http://untold.ng",
         "https://untold.ng",
         "https://www.untold.ng",
