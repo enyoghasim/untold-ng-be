@@ -38,11 +38,10 @@ const server = async () => {
       store: sessionStore,
       proxy: true,
       cookie: {
-        httpOnly: process.env.NODE_ENV === "production",
-        // httpOnly: false,
+        // httpOnly: process.env.NODE_ENV === "production",
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
-        // sameSite: true,
-        sameSite: "none",
+        sameSite: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     })
