@@ -5,19 +5,17 @@ import session from "express-session";
 import sessionStore from "./config/sessionStore.js";
 import ApiRoute from "./routes/index.js";
 import connectToDb from "./config/mongoose.js";
+import helmet from "helmet";
 
 const app = express();
 config();
 
 const server = async () => {
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.disable("x-powered-by");
-  app.enable("trust proxy", 1);
   app.use(
     cors({
       origin: [
         "http://localhost:8000",
+        "http://192.168.1.22:8000",
         "http://untold.ng",
         "https://untold.ng",
         "https://www.untold.ng",
@@ -26,6 +24,12 @@ const server = async () => {
       credentials: true,
     })
   );
+  app.use(helmet());
+  app.use(express.json());
+  app.disable("x-powered-by");
+  app.use(express.urlencoded({ extended: true }));
+  app.set("trust proxy", 1);
+
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
@@ -34,9 +38,9 @@ const server = async () => {
       store: sessionStore,
       proxy: true,
       cookie: {
-        // httpOnly: process.env.NODE_ENV === "production",
-        // secure: process.env.NODE_ENV === "production",
-        // sameSite: true,
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     })

@@ -22,6 +22,7 @@ export const requireAuth = async (req, res, next) => {
 };
 
 export const guestOnly = async (req, res, next) => {
+  //   console.log(req.session);
   if (!req.session.user?._id) {
     return next();
   }

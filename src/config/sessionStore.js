@@ -1,5 +1,4 @@
 import MongoStore from "connect-mongo";
-
 import { config } from "dotenv";
 
 config();
