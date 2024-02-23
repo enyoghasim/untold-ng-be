@@ -14,7 +14,7 @@ const server = async () => {
   app.use(
     cors({
       origin: [
-        "http://192.168.1.26:8000",
+        "http://192.168.1.23:8000",
         "http://localhost:8000",
         "http://untold.ng",
         "https://untold.ng",

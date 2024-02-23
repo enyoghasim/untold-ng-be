@@ -126,6 +126,69 @@ router.get("/logout", requireAuth, (req, res) => {
   }
 });
 
+router.post("/update-password", requireAuth, async (req, res) => {
+  try {
+    const user = req?.user;
+
+    if (!user) {
+      return sendErrorResponse(res, 401, null, "Unauthorized.");
+    }
+
+    const { password, confirmPassword, oldPassword } = req.body;
+
+    if (!password?.trim() || !confirmPassword?.trim() || !oldPassword?.trim()) {
+      return sendErrorResponse(res, 401, null, "All fields are required.");
+    }
+
+    if (oldPassword.length < 6) {
+      return sendErrorResponse(res, 401, null, "Invalid password.");
+    }
+
+    if (password.length < 6) {
+      return sendErrorResponse(
+        res,
+        401,
+        null,
+        "Password must be at least 6 characters long."
+      );
+    }
+
+    if (password !== confirmPassword) {
+      return sendErrorResponse(res, 401, null, "Passwords do not match.");
+    }
+
+    const userDetails = await UserController.getUserDetails(user._id);
+
+    if (!userDetails) {
+      return sendErrorResponse(res, 404, null, "User not found.");
+    }
+
+    const isValid = await bcryptjs.compare(
+      req.body.oldPassword,
+      userDetails.password
+    );
+
+    if (!isValid) {
+      return sendErrorResponse(res, 401, null, "Invalid old password.");
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+
+    userDetails.password = await bcryptjs.hash(password, salt);
+
+    await userDetails.save();
+
+    return sendSuccessResponse(
+      res,
+      200,
+      null,
+      "Password updated successfully."
+    );
+  } catch (error) {
+    return sendErrorResponse(res);
+  }
+});
+
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;

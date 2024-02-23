@@ -24,6 +24,7 @@ class UserController {
           $or: arrOfSelectors,
         })
           .select(selectDetails ?? "")
+          .lean()
           .then((details) => {
             resolve(details);
           })
