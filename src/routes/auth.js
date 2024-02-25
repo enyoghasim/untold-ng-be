@@ -99,7 +99,7 @@ router.post("/login", guestOnly, async (req, res) => {
     userDetails.activeSession = req.sessionID;
     await userDetails.save();
 
-    return sendSuccessResponse(res, 201, null, "Login successful.");
+    return sendSuccessResponse(res, 200, null, "Login successful.");
   } catch (error) {
     console.log(error);
     return sendErrorResponse(res);
