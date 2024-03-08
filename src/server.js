@@ -14,7 +14,7 @@ const server = async () => {
   app.use(
     cors({
       origin: [
-        "http://192.168.1.22:8000",
+        "http://192.168.1.25:8000",
         "http://localhost:8000",
         "http://untold.ng",
         "https://untold.ng",
@@ -41,7 +41,7 @@ const server = async () => {
         // httpOnly: process.env.NODE_ENV === "production",
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       },
     })

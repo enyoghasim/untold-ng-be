@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
       res,
       200,
       {
-        name: userDetails.email,
+        email: userDetails.email,
         tokens: userDetails.tokens,
       },
       "User details."
